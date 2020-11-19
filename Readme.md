@@ -1,7 +1,7 @@
 # Проект «Большое путешествие» [![Build status][travis-image]][travis-url]
 
 * Студент: [Илья Филонов](https://up.htmlacademy.ru/ecmascript/13/user/896721).
-* Наставник: `Неизвестно`.
+* Наставник: [Артём Мязитов](https://up.htmlacademy.ru/ecmascript/13/user/1164307).
 
 ---
 
