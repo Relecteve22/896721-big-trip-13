@@ -1,4 +1,40 @@
+import dayjs from "dayjs";
+import {DEFAULT_OFFERS} from "../const.js";
+
+const defaultEvent = () => {
+  return {
+    // pointRoute: generateRandomElement(POINTS_ROUTE),
+    // nameRoute: generateRandomElement(NAMES_ROUTE),
+    // isFavorite: Boolean(getRandomInteger(0, 1)),
+    dateFrom: dayjs().toDate(),
+    dateTo: dayjs().toDate(),
+    offers: DEFAULT_OFFERS,
+  }
+}
+
+console.log(defaultEvent());
+
 export const createAddNewEventTemplate = () => {
+  const {pointRoute, nameRoute, price, isFavorite, dateFrom, dateTo, offers} = defaultEvent;
+
+  const createDestinationTemplate = () => {
+    return `
+    <section class="event__section  event__section--destination">
+      <h3 class="event__section-title  event__section-title--destination">Destination</h3>
+      <p class="event__destination-description">${destination}</p>
+
+      <div class="event__photos-container">
+        <div class="event__photos-tape">
+          <img class="event__photo" src="img/photos/1.jpg" alt="Event photo">
+          <img class="event__photo" src="img/photos/2.jpg" alt="Event photo">
+          <img class="event__photo" src="img/photos/3.jpg" alt="Event photo">
+          <img class="event__photo" src="img/photos/4.jpg" alt="Event photo">
+          <img class="event__photo" src="img/photos/5.jpg" alt="Event photo">
+        </div>
+      </div>
+    </section>`;
+  };
+
   return `<li class="trip-events__item">
   <form class="event event--edit" action="#" method="post">
     <header class="event__header">
@@ -80,10 +116,10 @@ export const createAddNewEventTemplate = () => {
 
       <div class="event__field-group  event__field-group--time">
         <label class="visually-hidden" for="event-start-time-1">From</label>
-        <input class="event__input  event__input--time" id="event-start-time-1" type="text" name="event-start-time" value="19/03/19 00:00">
+        <input class="event__input  event__input--time" id="event-start-time-1" type="text" name="event-start-time" value="${dayjs(dateFrom).minute(0).second(0).format(`DD/MM/YY mm:ss`)}">
         &mdash;
         <label class="visually-hidden" for="event-end-time-1">To</label>
-        <input class="event__input  event__input--time" id="event-end-time-1" type="text" name="event-end-time" value="19/03/19 00:00">
+        <input class="event__input  event__input--time" id="event-end-time-1" type="text" name="event-end-time" value="${dayjs(dateTo).minute(0).second(0).format(`DD/MM/YY mm:ss`)}">
       </div>
 
       <div class="event__field-group  event__field-group--price">
@@ -148,21 +184,7 @@ export const createAddNewEventTemplate = () => {
           </div>
         </div>
       </section>
-
-      <section class="event__section  event__section--destination">
-        <h3 class="event__section-title  event__section-title--destination">Destination</h3>
-        <p class="event__destination-description">Geneva is a city in Switzerland that lies at the southern tip of expansive Lac Léman (Lake Geneva). Surrounded by the Alps and Jura mountains, the city has views of dramatic Mont Blanc.</p>
-
-        <div class="event__photos-container">
-          <div class="event__photos-tape">
-            <img class="event__photo" src="img/photos/1.jpg" alt="Event photo">
-            <img class="event__photo" src="img/photos/2.jpg" alt="Event photo">
-            <img class="event__photo" src="img/photos/3.jpg" alt="Event photo">
-            <img class="event__photo" src="img/photos/4.jpg" alt="Event photo">
-            <img class="event__photo" src="img/photos/5.jpg" alt="Event photo">
-          </div>
-        </div>
-      </section>
+      ${createDestinationTemplate()}
     </section>
   </form>
 </li>`;

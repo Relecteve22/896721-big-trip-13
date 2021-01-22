@@ -6,8 +6,12 @@ import {createSortTemplate} from "./view/sort.js";
 import {createListTemplate} from "./view/list.js";
 import {createEventTemplate} from "./view/event.js";
 import {createEditEventTemplate} from "./view/edit-event.js";
+import {createAddNewEventTemplate} from "./view/add-new-event.js";
+import {generateEvent} from "./mock/event.js";
 
 const EVENTS_COUNT = 3;
+const events = new Array(EVENTS_COUNT).fill().map(generateEvent);
+
 
 const render = (container, template, place) => {
   container.insertAdjacentHTML(place, template);
@@ -15,7 +19,6 @@ const render = (container, template, place) => {
 
 const siteHeaderElement = document.querySelector(`header`);
 const tripMainElement = siteHeaderElement.querySelector(`.trip-main`);
-
 render(tripMainElement, createInfoRouteTemplate(), `afterbegin`);
 
 const tripInfoElement = tripMainElement.querySelector(`.trip-main__trip-info`);
@@ -32,13 +35,10 @@ render(tripEventsElement, createSortTemplate(), `beforeend`);
 render(tripEventsElement, createListTemplate(), `beforeend`);
 const tripEventsListElement = tripEventsElement.querySelector(`.trip-events__list`);
 
-render(tripEventsListElement, createEditEventTemplate(), `afterbegin`);
+render(tripEventsListElement, createAddNewEventTemplate(), `afterbegin`);
 
 for (let i = 0; i < EVENTS_COUNT; i++) {
-  render(tripEventsListElement, createEventTemplate(), `beforeend`);
+  render(tripEventsListElement, createEventTemplate(events[i]), `beforeend`);
 }
 
-// const siteMainElement = document.querySelector(`.main`);
-// const siteHeaderElement = siteMainElement.querySelector(`.main__control`);
 
-// render(siteHeaderElement, createSiteMenuTemplate(), `beforeend`);
