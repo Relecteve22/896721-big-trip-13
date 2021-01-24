@@ -1,26 +1,40 @@
 import dayjs from "dayjs";
 
 export const createEventTemplate = (event) => {
-  const {pointRoute, nameRoute, price, isFavorite, dateFrom, dateTo, offers} = event;
-  console.log(event);
+  const { pointRoute, nameRoute, price, isFavorite, dateFrom, dateTo, offers } = event;
 
   const returnRangeDate = (dueFromDate, dueToDate) => {
+    const SECONDS_IN_MINUTES = 60;
+    const SECONDS_IN_HOUR = 60 * SECONDS_IN_MINUTES;
+    const SECONDS_IN_DAY = 24 * SECONDS_IN_HOUR;
+
     const dateFinish = dayjs(dueToDate);
-    const range = dateFinish.diff(dayjs(dueFromDate));
-    return dayjs(range).format(`DD[D] HH[H] m[M]`);
+    const diffSeconds = dateFinish.diff(dayjs(dueFromDate), 'second');
+
+    const diffDays = Math.floor(diffSeconds / SECONDS_IN_DAY);
+    const diffHours = Math.floor((diffSeconds - diffDays * SECONDS_IN_DAY) / SECONDS_IN_HOUR);
+    const diffMinutes = Math.floor((diffSeconds - diffHours * SECONDS_IN_HOUR - diffDays * SECONDS_IN_DAY) / SECONDS_IN_MINUTES);
+
+    let result = '';
+    result += diffDays ? `${diffDays.toString().padStart(2, '0')}D ` : '';
+    result += diffHours || diffDays ? `${diffHours.toString().padStart(2, '0')}H ` : '';
+    result += `${diffMinutes.toString().padStart(2, '0')}M`;
+    
+    return result;
   };
 
   const createOfferTemplate = (title, price) => {
-    return (`<li class="event__offer">
-    <span class="event__offer-title">${title}</span>
-    &plus;&euro;&nbsp;
-    <span class="event__offer-price">${price}</span>
+    return (`
+    <li class="event__offer">
+      <span class="event__offer-title">${title}</span>
+      &plus;&euro;&nbsp;
+      <span class="event__offer-price">${price}</span>
     </li>`);
   }
 
   const createOffersTemplate = () => {
-    let result = offers.reduce(function(layot, offer) {
-      const {title, price} = offer;
+    let result = offers.reduce(function (layot, offer) {
+      const { title, price } = offer;
       return layot + createOfferTemplate(title, price);
     }, ``);
 
