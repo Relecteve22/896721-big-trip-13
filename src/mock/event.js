@@ -1,5 +1,5 @@
 import dayjs from "dayjs";
-import {getRandomInteger, humanizeTaskDueDate} from "../utils.js";
+import {getRandomInteger} from "../utils.js";
 import {POINTS_ROUTE, NAMES_ROUTE, DESTINATION} from "../const.js";
 
 const titlesOffer = [`Order Uber`, `Add luggage`, `Switch to comfort`, `Rent a car`, `Add breakfast`, `Book tickets`, `Lunch in city`];
@@ -9,7 +9,7 @@ const generateRandomElement = (array) => {
 };
 
 const generatePhotos = () => {
-  const photos = new Set;
+  const photos = new Set();
   for (let i = 0; i < getRandomInteger(0, 10); i++) {
     photos.add(`http://picsum.photos/248/152?r=${getRandomInteger(0, 100)}`);
   }
@@ -25,7 +25,7 @@ const generateFromDate = () => {
   const minutesGap = getRandomInteger(-maxMinutesGap, maxMinutesGap);
 
   return dayjs().add(daysGap, `day`).add(hoursGap, `hour`).add(minutesGap, `minutes`).toDate();
-}
+};
 
 const generateToDate = () => {
   const maxDaysGap = 7;
@@ -36,7 +36,7 @@ const generateToDate = () => {
   const minutesGap = getRandomInteger(-maxMinutesGap, maxMinutesGap);
 
   return dayjs().add(daysGap, `day`).add(hoursGap, `hour`).add(minutesGap, `minutes`).toDate();
-}
+};
 
 export const generateEvent = () => {
 
@@ -46,7 +46,7 @@ export const generateEvent = () => {
     return {
       title: generateRandomElement(titlesOffer),
       price: getRandomInteger(0, 100),
-    }
+    };
   };
 
   const offers = Array(OFFERS_COUNT).fill().map(generateOffer);
@@ -61,5 +61,5 @@ export const generateEvent = () => {
     dateFrom: generateFromDate(),
     dateTo: generateToDate(),
     offers,
-  }
-}
+  };
+};

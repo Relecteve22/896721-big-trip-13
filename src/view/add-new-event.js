@@ -1,5 +1,6 @@
 import dayjs from "dayjs";
 import {DEFAULT_OFFERS} from "../const.js";
+import {createElement} from "../utils.js";
 
 const defaultEvent = () => {
   return {
@@ -9,49 +10,62 @@ const defaultEvent = () => {
     dateFrom: dayjs().toDate(),
     dateTo: dayjs().toDate(),
     offers: DEFAULT_OFFERS,
-  }
-}
+  };
+};
 
-console.log(defaultEvent());
-
-export const createAddNewEventTemplate = (event) => {
-  const {pointRoute, nameRoute, dateFrom, dateTo, offers, destination} = defaultEvent;
+const createAddNewEventTemplate = (event) => {
+  const {dateFrom, dateTo, offers, destination} = defaultEvent;
+  const {pointRoute, nameRoute, photos} = event;
 
   const createDestinationTemplate = () => {
-    if (destination === null) {
-      return;
-    }
+    const createPhotosTemplate = () => {
+      let result = photos.reduce(function (layot, photo) {
+        return layot + `<img class="event__photo" src="${photo}" alt="Event photo">`;
+      }, ``);
 
-    return `
-    <section class="event__section  event__section--destination">
+      return result;
+    };
+
+    return `<section class="event__section  event__section--destination">
       <h3 class="event__section-title  event__section-title--destination">Destination</h3>
-      <p class="event__destination-description"></p>
-
+      <p class="event__destination-description">
+        ${destination}
+      </p>
       <div class="event__photos-container">
         <div class="event__photos-tape">
+          ${createPhotosTemplate()}
         </div>
       </div>
     </section>`;
   };
 
-  const createOfferTemplate = (title, price) => {
+  const createOfferTemplate = (title, price, i) => {
     return (`<div class="event__offer-selector">
-    <input class="event__offer-checkbox  visually-hidden" id="event-offer-luggage-1" type="checkbox" name="event-offer-luggage" checked>
-    <label class="event__offer-label" for="event-offer-luggage-1">
+    <input class="event__offer-checkbox  visually-hidden" id="event-offer-luggage-${i}" type="checkbox" name="event-offer-luggage">
+    <label class="event__offer-label" for="event-offer-luggage-${i}">
       <span class="event__offer-title">${title}</span>
       &plus;&euro;&nbsp;
       <span class="event__offer-price">${price}</span>
     </label>
   </div>`);
-  }
+  };
 
   const createOffersTemplate = () => {
-    let result = offers.reduce(function(layot, offer) {
+    let result = offers.reduce(function (layot, offer, i) {
       const {title, price} = offer;
-      return layot + createOfferTemplate(title, price);
+      return layot + createOfferTemplate(title, price, i);
     }, ``);
 
     return result;
+  };
+
+  const createSectionOffersTemplate = () => {
+    return `<section class="event__section  event__section--offers">
+    <h3 class="event__section-title  event__section-title--offers">Offers</h3>
+    <div class="event__available-offers">
+      ${createOffersTemplate()}
+    </div>
+  </section>`;
   };
 
   return `<li class="trip-events__item">
@@ -153,15 +167,33 @@ export const createAddNewEventTemplate = (event) => {
       <button class="event__reset-btn" type="reset">Cancel</button>
     </header>
     <section class="event__details">
-      <section class="event__section  event__section--offers">
-        <h3 class="event__section-title  event__section-title--offers">Offers</h3>
-
-        <div class="event__available-offers">
-        
-        </div>
-      </section>
-      ${createDestinationTemplate()}
+    ${offers.length ? createSectionOffersTemplate() : ``}
+    ${createDestinationTemplate()}
     </section>
   </form>
 </li>`;
 };
+
+export default class AddNewEvent {
+  constructor(event) {
+    this._element = null;
+
+    this._event = event;
+  }
+
+  _getTemplate() {
+    return createAddNewEventTemplate(this._event);
+  }
+
+  getElement() {
+    if (!this._element) {
+      this._element = createElement(this._getTemplate());
+    }
+
+    return this._element;
+  }
+
+  removeElement() {
+    this._element = null;
+  }
+}
