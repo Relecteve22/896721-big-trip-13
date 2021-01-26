@@ -1,6 +1,6 @@
 import dayjs from "dayjs";
 import {DEFAULT_OFFERS} from "../const.js";
-import {createElement} from "../utils.js";
+import Abstract from "./abstract.js";
 
 const defaultEvent = () => {
   return {
@@ -174,26 +174,14 @@ const createAddNewEventTemplate = (event) => {
 </li>`;
 };
 
-export default class AddNewEvent {
+export default class AddNewEvent extends Abstract {
   constructor(event) {
-    this._element = null;
+    super();
 
     this._event = event;
   }
 
   _getTemplate() {
     return createAddNewEventTemplate(this._event);
-  }
-
-  getElement() {
-    if (!this._element) {
-      this._element = createElement(this._getTemplate());
-    }
-
-    return this._element;
-  }
-
-  removeElement() {
-    this._element = null;
   }
 }

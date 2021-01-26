@@ -1,4 +1,4 @@
-import {createElement} from "../utils.js";
+import Abstract from "./abstract.js";
 
 const createInfoRouteTemplate = () => {
   return `<section class="trip-main__trip-info  trip-info">
@@ -10,24 +10,8 @@ const createInfoRouteTemplate = () => {
 </section>`;
 };
 
-export default class InfoRoute {
-  constructor() {
-    this._element = null;
-  }
-
+export default class InfoRoute extends Abstract {
   _getTemplate() {
     return createInfoRouteTemplate();
-  }
-
-  getElement() {
-    if (!this._element) {
-      this._element = createElement(this._getTemplate());
-    }
-
-    return this._element;
-  }
-
-  removeElement() {
-    this._element = null;
   }
 }

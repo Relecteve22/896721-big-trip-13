@@ -1,5 +1,5 @@
-import {createElement} from "../utils.js";
 import dayjs from "dayjs";
+import Abstract from "./abstract.js";
 
 const createEditEventTemplate = (event) => {
   const {pointRoute, nameRoute, price, dateFrom, dateTo, offers, destination, photos} = event;
@@ -164,26 +164,40 @@ const createEditEventTemplate = (event) => {
 </li>`;
 };
 
-export default class EditEvent {
+export default class EditEvent extends Abstract {
   constructor(event) {
-    this._element = null;
+    super();
 
     this._event = event;
+    this._clickHandler = this._clickHandler.bind(this);
+    this._submitHandler = this._submitHandler.bind(this);
   }
 
   _getTemplate() {
     return createEditEventTemplate(this._event);
   }
 
-  getElement() {
-    if (!this._element) {
-      this._element = createElement(this._getTemplate());
-    }
+  _clickHandler(evt) {
+    evt.preventDefault();
 
-    return this._element;
+    this._callback.click();
   }
 
-  removeElement() {
-    this._element = null;
+  setClickOpenEvent(callback) {
+    this._callback.click = callback;
+
+    this.getElement().querySelector(`.event__rollup-btn`).addEventListener(`click`, this._clickHandler);
+  }
+
+  _submitHandler(evt) {
+    evt.preventDefault();
+
+    this._callback.submit();
+  }
+
+  setSubmitEvent(callback) {
+    this._callback.submit = callback;
+
+    this.getElement().querySelector(`form`).addEventListener(`submit`, this._submitHandler);
   }
 }

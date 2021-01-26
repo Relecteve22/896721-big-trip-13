@@ -1,5 +1,5 @@
 import dayjs from "dayjs";
-import {createElement} from "../utils.js";
+import Abstract from "./abstract.js";
 
 const createEventTemplate = (event) => {
   const {pointRoute, nameRoute, price, isFavorite, dateFrom, dateTo, offers} = event;
@@ -79,27 +79,28 @@ const createEventTemplate = (event) => {
   </li>`;
 };
 
-export default class Event {
+export default class Event extends Abstract {
   constructor(event) {
-    this._element = null;
+    super();
 
     this._event = event;
+    this._clickHandler = this._clickHandler.bind(this);
   }
 
   _getTemplate() {
     return createEventTemplate(this._event);
   }
 
-  getElement() {
-    if (!this._element) {
-      this._element = createElement(this._getTemplate());
-    }
+  _clickHandler(evt) {
+    evt.preventDefault();
 
-    return this._element;
+    this._callback.click();
   }
 
-  removeElement() {
-    this._element = null;
+  setClickOpenForm(callback) {
+    this._callback.click = callback;
+
+    this.getElement().querySelector(`.event__rollup-btn`).addEventListener(`click`, this._clickHandler);
   }
 }
 
