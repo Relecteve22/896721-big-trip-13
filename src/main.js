@@ -11,6 +11,8 @@ import ListEmptyView from "./view/list-empty.js";
 import {generateEvent} from "./mock/event.js";
 import {render, RenderPosition, replace} from "./utils/render.js";
 
+import TripPresenter from "./presenter/trip.js";
+
 const EVENTS_COUNT = 3;
 const events = new Array(EVENTS_COUNT).fill().map(generateEvent);
 
@@ -28,58 +30,61 @@ render(tripControlsElement, new FilterView(), RenderPosition.BEFOREEND);
 
 const tripEventsElement = document.querySelector(`.trip-events`);
 
-const createBoardEvent = () => {
-  if (!events.length) {
-    render(tripEventsElement, new ListEmptyView(), RenderPosition.BEFOREEND);
-    return;
-  }
+const tripPresenter = new TripPresenter(tripEventsElement);
+tripPresenter.init(events);
 
-  render(tripEventsElement, new SortView(), RenderPosition.BEFOREEND);
+// const createBoardEvent = () => {
+//   if (!events.length) {
+//     render(tripEventsElement, new ListEmptyView(), RenderPosition.BEFOREEND);
+//     return;
+//   }
 
-  const tripEventsListComponent = new ListView();
-  render(tripEventsElement, tripEventsListComponent, RenderPosition.BEFOREEND);
+//   render(tripEventsElement, new SortView(), RenderPosition.BEFOREEND);
 
-  const renderEvent = (eventListElement, event) => {
-    const eventComponent = new EventView(event);
-    const eventEditComponent = new EditEventView(event);
+//   const tripEventsListComponent = new ListView();
+//   render(tripEventsElement, tripEventsListComponent, RenderPosition.BEFOREEND);
 
-    const replaceEventToForm = () => {
-      replace(eventEditComponent, eventComponent);
-    };
+//   const renderEvent = (eventListElement, event) => {
+//     const eventComponent = new EventView(event);
+//     const eventEditComponent = new EditEventView(event);
 
-    const replaceFormToEvent = () => {
-      replace(eventComponent, eventEditComponent);
-    };
+//     const replaceEventToForm = () => {
+//       replace(eventEditComponent, eventComponent);
+//     };
 
-    const onEscKeyDown = (evt) => {
-      if (evt.key === `Escape` || evt.key === `Esc`) {
-        evt.preventDefault();
-        replaceFormToEvent();
-        document.removeEventListener(`keydown`, onEscKeyDown);
-      }
-    };
+//     const replaceFormToEvent = () => {
+//       replace(eventComponent, eventEditComponent);
+//     };
 
-    eventComponent.setClickOpenForm(() => {
-      replaceEventToForm();
-      document.addEventListener(`keydown`, onEscKeyDown);
-    });
+//     const onEscKeyDown = (evt) => {
+//       if (evt.key === `Escape` || evt.key === `Esc`) {
+//         evt.preventDefault();
+//         replaceFormToEvent();
+//         document.removeEventListener(`keydown`, onEscKeyDown);
+//       }
+//     };
 
-    eventEditComponent.setClickOpenEvent(() => {
-      replaceFormToEvent();
-      document.removeEventListener(`keydown`, onEscKeyDown);
-    });
+//     eventComponent.setClickOpenForm(() => {
+//       replaceEventToForm();
+//       document.addEventListener(`keydown`, onEscKeyDown);
+//     });
 
-    eventEditComponent.setSubmitEvent(() => {
-      replaceFormToEvent();
-      document.removeEventListener(`keydown`, onEscKeyDown);
-    });
+//     eventEditComponent.setClickOpenEvent(() => {
+//       replaceFormToEvent();
+//       document.removeEventListener(`keydown`, onEscKeyDown);
+//     });
 
-    render(eventListElement, eventComponent, RenderPosition.BEFOREEND);
-  };
+//     eventEditComponent.setSubmitEvent(() => {
+//       replaceFormToEvent();
+//       document.removeEventListener(`keydown`, onEscKeyDown);
+//     });
 
-  events
-  .slice(0, Math.min(events.length, EVENTS_COUNT))
-  .forEach((event) => renderEvent(tripEventsListComponent, event));
-};
+//     render(eventListElement, eventComponent, RenderPosition.BEFOREEND);
+//   };
 
-createBoardEvent();
+//   events
+//   .slice(0, Math.min(events.length, EVENTS_COUNT))
+//   .forEach((event) => renderEvent(tripEventsListComponent, event));
+// };
+
+// createBoardEvent();
