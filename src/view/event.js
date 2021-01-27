@@ -17,8 +17,8 @@ const createEventTemplate = (event) => {
     const diffMinutes = Math.floor((diffSeconds - diffHours * SECONDS_IN_HOUR - diffDays * SECONDS_IN_DAY) / SECONDS_IN_MINUTES);
 
     let result = ``;
-    result += diffDays ? `${diffDays.toString().padStart(2, `0`)}D ` : `''`;
-    result += diffHours || diffDays ? `${diffHours.toString().padStart(2, `0`)}H ` : `''`;
+    result += diffDays ? `${diffDays.toString().padStart(2, `0`)}D ` : ``;
+    result += diffHours || diffDays ? `${diffHours.toString().padStart(2, `0`)}H ` : ``;
     result += `${diffMinutes.toString().padStart(2, `0`)}M`;
 
     return result;
