@@ -8,6 +8,8 @@ const generateRandomElement = (array) => {
   return array[getRandomInteger(0, array.length - 1)];
 };
 
+const generateId = () => Date.now() + parseInt(Math.random() * 10000, 10);
+
 const generatePhotos = () => {
   const photos = new Set();
   for (let i = 0; i < getRandomInteger(0, 10); i++) {
@@ -52,6 +54,7 @@ export const generateEvent = () => {
   const offers = Array(OFFERS_COUNT).fill().map(generateOffer);
 
   return {
+    id: generateId(),
     pointRoute: generateRandomElement(POINTS_ROUTE),
     nameRoute: generateRandomElement(NAMES_ROUTE),
     destination: generateRandomElement(DESTINATION),

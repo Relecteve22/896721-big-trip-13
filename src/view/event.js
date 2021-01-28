@@ -85,6 +85,7 @@ export default class Event extends Abstract {
 
     this._event = event;
     this._clickHandler = this._clickHandler.bind(this);
+    this._favoriteHandler = this._favoriteHandler.bind(this);
   }
 
   _getTemplate() {
@@ -101,6 +102,18 @@ export default class Event extends Abstract {
     this._callback.click = callback;
 
     this.getElement().querySelector(`.event__rollup-btn`).addEventListener(`click`, this._clickHandler);
+  }
+
+  _favoriteHandler(evt) {
+    evt.preventDefault();
+
+    this._callback.favoriteClick();
+  }
+
+  setClickFavorite(callback) {
+    this._callback.favoriteClick = callback;
+
+    this.getElement().querySelector(`.event__favorite-btn`).addEventListener(`click`, this._favoriteHandler);
   }
 }
 
