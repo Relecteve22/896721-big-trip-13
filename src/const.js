@@ -23,3 +23,9 @@ export const DEFAULT_OFFERS = [
     price: 40
   }
 ];
+
+export const SortType = {
+  DAY: `day`,
+  TIME: `time`,
+  PRICE: `price`
+};
