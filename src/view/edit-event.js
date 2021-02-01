@@ -41,7 +41,7 @@ const createNamesEventTemplate = (namesDestinations) => {
 const createTypesEventTemplate = () => {
   const createTypeTemplate = (type) => {
     return `<div class="event__type-item">
-      <input id="event-type-${type}-1" class="event__type-input  visually-hidden" type="radio" name="event-type" value="${type}">
+      <input id="event-type-${type}-1" class="event__type-input visually-hidden" data-type="${type}" type="radio" name="event-type" value="${type}">
       <label class="event__type-label  event__type-label--${type}" for="event-type-${type}-1">${type}</label>
     </div>`;
   };
@@ -60,7 +60,7 @@ const isCheckedOffer = (offers, title) => {
 const createSectionOffersTemplate = (offers, point, isOffers) => {
   const createOfferTemplate = (title, price, i) => {
     return (`<div class="event__offer-selector">
-    <input class="event__offer-checkbox  visually-hidden" id="event-offer-luggage-${i}" type="checkbox" name="event-offer-luggage" ${isCheckedOffer(offers, title)}>
+    <input class="event__offer-checkbox  visually-hidden" id="event-offer-luggage-${i}" data-index="${i}" type="checkbox" name="event-offer-luggage" ${isCheckedOffer(offers, title)}>
     <label class="event__offer-label" for="event-offer-luggage-${i}">
       <span class="event__offer-title">${title}</span>
       &plus;&euro;&nbsp;
@@ -157,31 +157,21 @@ export default class EditEvent extends Smart {
 
     this._data = EditEvent.parseEventToData(event);
     this._datepicker = {};
+    this._indexOffersInArr = offersData.findIndex((offer) => offer.type === this._data.pointRoute);
 
     this._clickHandler = this._clickHandler.bind(this);
     this._submitHandler = this._submitHandler.bind(this);
     this._priceChangeHandler = this._priceChangeHandler.bind(this);
     this._startTimeRouteChangeHandler = this._startTimeRouteChangeHandler.bind(this);
     this._finishTimeRouteChangeHandler = this._finishTimeRouteChangeHandler.bind(this);
+    this._offersActiveChangeHandler = this._offersActiveChangeHandler.bind(this);
+    this._typesEventChangeHandler = this._typesEventChangeHandler.bind(this);
 
     this._setInnerHandlers();
   }
 
   _getTemplate() {
     return createEditEventTemplate(this._data);
-  }
-
-  restoreHandlers() {
-    this._setInnerHandlers();
-    this.setSubmitEvent(this._callback.submit);
-  }
-
-  _setInnerHandlers() {
-    this._setDateFromPicker();
-    this._setDateToPicker();
-    this.getElement()
-      .querySelector(`.event__input--price`)
-      .addEventListener(`input`, this._priceChangeHandler);
   }
 
   _clickHandler(evt) {
@@ -202,7 +192,7 @@ export default class EditEvent extends Smart {
       price: evt.target.value
     }, true);
   }
-
+;
   _startTimeRouteChangeHandler([userDate]) {
     this.updateData({
       dateFrom: userDate
@@ -215,6 +205,48 @@ export default class EditEvent extends Smart {
       dateTo: userDate
     }, true);
     this._setDateFromPicker();
+  }
+
+  _offersActiveChangeHandler(evt) {
+    evt.preventDefault();
+    let dataOfferChange = offersData[this._indexOffersInArr].offers[evt.target.dataset.index];
+
+    if (evt.target.checked) {
+      this.updateData({
+        offers: [...this._data.offers, dataOfferChange]
+      }, true);
+      return;
+    }
+
+    let EventOffersSet = new Set(this._data.offers);
+    EventOffersSet.delete(dataOfferChange);
+    this.updateData({
+      offers: Array.from(EventOffersSet)
+    }, true);
+  }
+
+  _typesEventChangeHandler(evt) {
+    evt.preventDefault();
+    this.updateData({
+      pointRoute: evt.target.dataset.type,
+      offer: []
+    });
+  }
+
+  _setInnerHandlers() {
+    this._setDateFromPicker();
+    this._setDateToPicker();
+    this.getElement()
+      .querySelector(`.event__input--price`)
+      .addEventListener(`input`, this._priceChangeHandler);
+    if (this._data.isOffers) {
+      this.getElement()
+        .querySelector(`.event__available-offers`)
+        .addEventListener(`change`, this._offersActiveChangeHandler);
+    }
+    this.getElement()
+      .querySelector(`.event__type-group`)
+      .addEventListener(`change`, this._typesEventChangeHandler);
   }
 
   _setDateFromPicker() {
@@ -255,6 +287,17 @@ export default class EditEvent extends Smart {
     );
   }
 
+  reset(event) {
+    this.updateData(
+      EditEvent.parseDataToEvent(event)
+    );
+  }
+
+  restoreHandlers() {
+    this._setInnerHandlers();
+    this.setSubmitEvent(this._callback.submit);
+  }
+
   setClickOpenEvent(callback) {
     this._callback.click = callback;
 
@@ -268,12 +311,13 @@ export default class EditEvent extends Smart {
   }
 
   static parseEventToData(event) {
+    const indexOffersInArr = offersData.findIndex((offer) => offer.type === event.pointRoute);
     return Object.assign(
         {},
         event,
         {
           isDestination: event.destination.description !== null,
-          isOffers: event.offers.length !== 0
+          isOffers: offersData[indexOffersInArr].offers.length !== 0
         }
     );
   }

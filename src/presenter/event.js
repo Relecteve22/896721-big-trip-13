@@ -83,6 +83,7 @@ export default class Event {
   _onEscKeyDownHandler(evt) {
     if (evt.key === `Escape` || evt.key === `Esc`) {
       evt.preventDefault();
+      this._eventEditComponent.reset(this._event);
       this._replaceFormEditToEvent();
       document.removeEventListener(`keydown`, this._onEscKeyDownHandler);
     }
@@ -98,6 +99,7 @@ export default class Event {
   }
 
   _handleEventClick() {
+    this._eventEditComponent.reset(this._event);
     this._replaceFormEditToEvent();
   }
 
