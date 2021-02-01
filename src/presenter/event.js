@@ -92,7 +92,8 @@ export default class Event {
     this._replaceEventToFormEdit();
   }
 
-  _handleFormSubmitClick() {
+  _handleFormSubmitClick(event) {
+    this._changeData(event);
     this._replaceFormEditToEvent();
   }
 
