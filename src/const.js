@@ -28,9 +28,13 @@ export const DEFAULT_OFFERS = [
   }
 ];
 
+export const SECONDS_IN_MINUTES = 60;
+export const SECONDS_IN_HOUR = 60 * SECONDS_IN_MINUTES;
+export const SECONDS_IN_DAY = 24 * SECONDS_IN_HOUR;
+
 // СНИЗУ ВСЁ ДЛЯ ГЕНЕРАЦИИ МОКОВЫХ ДАННЫХ
 
-export const POINTS_ROUTE = ["taxi", "bus", "train", "ship", "transport", "drive", "flight", "check-in", "sightseeing", "restaurant"];
+export const POINTS_ROUTE = [`taxi`, `bus`, `train`, `ship`, `transport`, `drive`, `flight`, `check-in`, `sightseeing`, `restaurant`];
 export const NAMES_ROUTE = [`Amsterdam`, `Chamonix`, `Geneva`, `Paris`, `Moscow`];
 export const DESTINATION = [`Lorem ipsum dolor sit amet, consectetur adipiscing elit.`, `Cras aliquet varius magna, non porta ligula feugiat eget. Fusce tristique felis at fermentum pharetra. Aliquam id orci ut lectus varius viverra.`, `Sed blandit, eros vel aliquam faucibus, purus ex euismod diam, eu luctus nunc ante ut dui.`, `Sed sed nisi sed augue convallis suscipit in sed felis. Aliquam erat volutpat.`, `Nunc fermentum tortor ac porta dapibus. In rutrum ac purus sit amet tempus.`, null];
 export const DESCRIPTION_PHOTOS = [`Amsterdam is very good`, `Chamonix is city`, `Geneva is good`, `Paris is city`, `Moscow is city`];

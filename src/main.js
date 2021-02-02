@@ -8,7 +8,7 @@ import {render, RenderPosition} from "./utils/render.js";
 import TripPresenter from "./presenter/trip.js";
 
 const EVENTS_COUNT = 3;
-const events = new Array(EVENTS_COUNT).fill().map(generateEvent);
+const events = new Array(EVENTS_COUNT).fill(null).map(generateEvent);
 
 const siteHeaderElement = document.querySelector(`header`);
 const tripMainElement = siteHeaderElement.querySelector(`.trip-main`);

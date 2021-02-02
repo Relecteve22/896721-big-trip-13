@@ -13,7 +13,7 @@ export const generateOffersData = () => {
     return Array.from(offers);
   };
 
-  const offers = Array(OFFERS_COUNT).fill().map((element, i) => {
+  const offers = Array(OFFERS_COUNT).fill(null).map((element, i) => {
     return {
       type: POINTS_ROUTE[i],
       offers: generateOffers(),
@@ -37,7 +37,7 @@ export const generateDestinationsData = () => {
     return Array.from(photos);
   };
 
-  const destinations = Array(DESTINATION_COUNT).fill().map((element, i) => {
+  const destinations = Array(DESTINATION_COUNT).fill(null).map((element, i) => {
     let description = DESTINATION[getRandomInteger(0, DESTINATION.length - 1)];
     return {
       description,

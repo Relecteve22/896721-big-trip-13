@@ -1,14 +1,11 @@
 import dayjs from "dayjs";
 import Abstract from "./abstract.js";
+import {SECONDS_IN_MINUTES, SECONDS_IN_HOUR, SECONDS_IN_DAY} from "../const.js";
 
 const createEventTemplate = (event) => {
-  const {pointRoute, nameRoute, price, isFavorite, dateFrom, dateTo, offers} = event;
+  const {pointRoute, price: pointPrice, isFavorite, dateFrom, dateTo, offers, destination} = event;
 
   const returnRangeDate = (dueFromDate, dueToDate) => {
-    const SECONDS_IN_MINUTES = 60;
-    const SECONDS_IN_HOUR = 60 * SECONDS_IN_MINUTES;
-    const SECONDS_IN_DAY = 24 * SECONDS_IN_HOUR;
-
     const dateFinish = dayjs(dueToDate);
     const diffSeconds = dateFinish.diff(dayjs(dueFromDate), `second`);
 
@@ -24,12 +21,12 @@ const createEventTemplate = (event) => {
     return result;
   };
 
-  const createOfferTemplate = (title, price) => {
+  const createOfferTemplate = (title, offerPrice) => {
     return (`
     <li class="event__offer">
       <span class="event__offer-title">${title}</span>
       &plus;&euro;&nbsp;
-      <span class="event__offer-price">${price}</span>
+      <span class="event__offer-price">${offerPrice}</span>
     </li>`);
   };
 
@@ -50,7 +47,7 @@ const createEventTemplate = (event) => {
       <div class="event__type">
         <img class="event__type-icon" width="42" height="42" src="img/icons/${pointRoute}.png" alt="Event type icon">
       </div>
-      <h3 class="event__title">${pointRoute} ${nameRoute}</h3>
+      <h3 class="event__title">${pointRoute} ${destination.name}</h3>
       <div class="event__schedule">
         <p class="event__time">
           <time class="event__start-time" datetime="${dayjs(dateFrom).format()}">${dayjs(dateFrom).format(`hh:mm`)}</time>
@@ -60,7 +57,7 @@ const createEventTemplate = (event) => {
         <p class="event__duration">${returnRangeDate(dateFrom, dateTo)}</p>
       </div>
       <p class="event__price">
-        &euro;&nbsp;<span class="event__price-value">${price}</span>
+        &euro;&nbsp;<span class="event__price-value">${pointPrice}</span>
       </p>
       <h4 class="visually-hidden">Offers:</h4>
       <ul class="event__selected-offers">

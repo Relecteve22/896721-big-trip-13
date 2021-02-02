@@ -20,8 +20,8 @@ export const getWeightTime = (dateA, dateB) => {
   const returnSecondsDate = (date) => {
     const dateFinishDate = dayjs(date.dateTo);
     return dateFinishDate.diff(dayjs(date.dateFrom));
-  }
-  
+  };
+
   const diffSecondsDateA = returnSecondsDate(dateA);
   const diffSecondsDateB = returnSecondsDate(dateB);
 
@@ -30,6 +30,18 @@ export const getWeightTime = (dateA, dateB) => {
   }
 
   if (diffSecondsDateA < diffSecondsDateB) {
+    return 1;
+  }
+
+  return null;
+};
+
+export const getWeightEventDayStart = (dateA, dateB) => {
+  if (dateA.dateFrom > dateB.dateFrom) {
+    return -1;
+  }
+
+  if (dateA.dateFrom < dateB.dateFrom) {
     return 1;
   }
 

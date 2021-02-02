@@ -1,23 +1,22 @@
-import dayjs from "dayjs";
 import flatpickr from "flatpickr";
 import Smart from "./smart.js";
 import {offersData, destinationsData} from "../const.js";
-import {POINTS_ROUTE} from "../const.js"
+import {POINTS_ROUTE} from "../const.js";
 import {formatDate} from "../utils/common.js";
 
 import "../../node_modules/flatpickr/dist/flatpickr.min.css";
 
-const createDestinationTemplate = (destination, isDestination) => {
+const createDestinationTemplate = (destination) => {
   const createPicturesTemplate = () => {
-    let result = destination.pictures.reduce(function (layot, picture) {
+    let result = destination.pictures.reduce(function (layout, picture) {
       const {src, description} = picture;
-      return layot + `<img class="event__photo" src="${src}" alt="${description}">`;
+      return layout + `<img class="event__photo" src="${src}" alt="${description}">`;
     }, ``);
 
     return result;
   };
 
-  return isDestination ? `<section class="event__section  event__section--destination">
+  return `<section class="event__section  event__section--destination">
     <h3 class="event__section-title  event__section-title--destination">Destination</h3>
     <p class="event__destination-description">
       ${destination.description}
@@ -27,12 +26,12 @@ const createDestinationTemplate = (destination, isDestination) => {
         ${createPicturesTemplate()}
       </div>
     </div>
-  </section>`: ``;
+  </section>`;
 };
 
 const createNamesEventTemplate = (namesDestinations) => {
-  let result = namesDestinations.reduce(function (layot, name) {
-    return layot + `<option value="${name}"></option>`;
+  let result = namesDestinations.reduce(function (layout, name) {
+    return layout + `<option value="${name}"></option>`;
   }, ``);
 
   return result;
@@ -46,18 +45,19 @@ const createTypesEventTemplate = () => {
     </div>`;
   };
 
-  let result = POINTS_ROUTE.reduce(function (layot, type) {
-    return layot + createTypeTemplate(type);
+  let result = POINTS_ROUTE.reduce(function (layout, type) {
+    return layout + createTypeTemplate(type);
   }, ``);
 
   return result;
 };
 
 const isCheckedOffer = (offers, title) => {
-  let index = offers.findIndex((offer) => offer.title === title);
+  const index = offers.findIndex((offer) => offer.title === title);
   return index !== -1 ? `checked` : ``;
-}
-const createSectionOffersTemplate = (offers, point, isOffers) => {
+};
+
+const createSectionOffersTemplate = (offers, point) => {
   const createOfferTemplate = (title, price, i) => {
     return (`<div class="event__offer-selector">
     <input class="event__offer-checkbox  visually-hidden" id="event-offer-luggage-${i}" data-index="${i}" type="checkbox" name="event-offer-luggage" ${isCheckedOffer(offers, title)}>
@@ -70,28 +70,30 @@ const createSectionOffersTemplate = (offers, point, isOffers) => {
   };
 
   const createOffersTemplate = () => {
-    let index = offersData.findIndex((offer) => offer.type === point);
+    const index = offersData.findIndex((offer) => offer.type === point);
 
-    let result = offersData[index].offers.reduce(function (layot, offer, i) {
+    let result = offersData[index].offers.reduce(function (layout, offer, i) {
       const {title, price} = offer;
-      return layot + createOfferTemplate(title, price, i);
+      return layout + createOfferTemplate(title, price, i);
     }, ``);
 
     return result;
   };
 
-  return isOffers ? `<section class="event__section  event__section--offers">
+  return `<section class="event__section  event__section--offers">
   <h3 class="event__section-title  event__section-title--offers">Offers</h3>
   <div class="event__available-offers">
   ${createOffersTemplate()}
   </div>
-</section>` : ``;
+</section>`;
 };
 
-const createEditEventTemplate = (data) => {
-  const {pointRoute, nameRoute, price, dateFrom, dateTo, offers: offersEvent, destination, isDestination, isOffers} = data;
+const createEditEventTemplate = (data, indexOffersInArr) => {
+  const {pointRoute, price, dateFrom, dateTo, offers: offersEvent, destination} = data;
 
-  const namesDestinationsData = Array(destinationsData.length).fill().map((element, i) => {return destinationsData[i].name});
+  const namesDestinationsData = Array(destinationsData.length).fill(null).map((element, i) => {
+    return destinationsData[i].name;
+  });
 
   return `<li class="trip-events__item">
   <form class="event event--edit" action="#" method="post">
@@ -115,7 +117,7 @@ const createEditEventTemplate = (data) => {
         <label class="event__label  event__type-output" for="event-destination-1">
           ${pointRoute}
         </label>
-        <input class="event__input  event__input--destination" id="event-destination-1" type="text" name="event-destination" value="${nameRoute}" list="destination-list-1">
+        <input class="event__input  event__input--destination" id="event-destination-1" type="text" name="event-destination" value="${destination.name}" list="destination-list-1">
         <datalist id="destination-list-1">
           ${createNamesEventTemplate(namesDestinationsData)}
         </datalist>
@@ -144,8 +146,8 @@ const createEditEventTemplate = (data) => {
       </button>
     </header>
     <section class="event__details">
-    ${createSectionOffersTemplate(offersEvent, pointRoute, isOffers)}
-    ${createDestinationTemplate(destination, isDestination)}
+    ${offersData[indexOffersInArr].offers.length !== 0 ? createSectionOffersTemplate(offersEvent, pointRoute) : ``}
+    ${destination.description ? createDestinationTemplate(destination) : ``}
     </section>
   </form>
 </li>`;
@@ -155,9 +157,12 @@ export default class EditEvent extends Smart {
   constructor(event) {
     super();
 
-    this._data = EditEvent.parseEventToData(event);
+    this._data = event;
     this._datepicker = {};
     this._indexOffersInArr = offersData.findIndex((offer) => offer.type === this._data.pointRoute);
+    this._namesDestinationsData = Array(destinationsData.length).fill(null).map((element, i) => {
+      return destinationsData[i].name;
+    });
 
     this._clickHandler = this._clickHandler.bind(this);
     this._submitHandler = this._submitHandler.bind(this);
@@ -166,12 +171,13 @@ export default class EditEvent extends Smart {
     this._finishTimeRouteChangeHandler = this._finishTimeRouteChangeHandler.bind(this);
     this._offersActiveChangeHandler = this._offersActiveChangeHandler.bind(this);
     this._typesEventChangeHandler = this._typesEventChangeHandler.bind(this);
+    this._valueNameChangeHandler = this._valueNameChangeHandler.bind(this);
 
     this._setInnerHandlers();
   }
 
   _getTemplate() {
-    return createEditEventTemplate(this._data);
+    return createEditEventTemplate(this._data, this._indexOffersInArr);
   }
 
   _clickHandler(evt) {
@@ -182,17 +188,17 @@ export default class EditEvent extends Smart {
 
   _submitHandler(evt) {
     evt.preventDefault();
-    this._callback.submit(EditEvent.parseDataToEvent(this._data));
+    this._callback.submit(this._data);
   }
 
   _priceChangeHandler(evt) {
     evt.preventDefault();
-    evt.target.value = evt.target.value.replace (/[^\+\d]/g, '');
+    evt.target.value = evt.target.value.replace(/[^\+\d]/g, ``);
     this.updateData({
       price: evt.target.value
     }, true);
   }
-;
+
   _startTimeRouteChangeHandler([userDate]) {
     this.updateData({
       dateFrom: userDate
@@ -209,7 +215,7 @@ export default class EditEvent extends Smart {
 
   _offersActiveChangeHandler(evt) {
     evt.preventDefault();
-    let dataOfferChange = offersData[this._indexOffersInArr].offers[evt.target.dataset.index];
+    const dataOfferChange = offersData[this._indexOffersInArr].offers[evt.target.dataset.index];
 
     if (evt.target.checked) {
       this.updateData({
@@ -218,18 +224,30 @@ export default class EditEvent extends Smart {
       return;
     }
 
-    let EventOffersSet = new Set(this._data.offers);
+    const EventOffersSet = new Set(this._data.offers);
     EventOffersSet.delete(dataOfferChange);
     this.updateData({
       offers: Array.from(EventOffersSet)
     }, true);
   }
 
+  _valueNameChangeHandler(evt) {
+    evt.preventDefault();
+    for (let nameDestinations of this._namesDestinationsData) {
+      if (evt.target.value === nameDestinations) {
+        const indexNamesInArr = destinationsData.findIndex((destination) => destination.name === evt.target.value);
+        this.updateData({
+          destination: destinationsData[indexNamesInArr]
+        });
+      }
+    }
+  }
+
   _typesEventChangeHandler(evt) {
     evt.preventDefault();
     this.updateData({
       pointRoute: evt.target.dataset.type,
-      offer: []
+      offers: []
     });
   }
 
@@ -239,10 +257,15 @@ export default class EditEvent extends Smart {
     this.getElement()
       .querySelector(`.event__input--price`)
       .addEventListener(`input`, this._priceChangeHandler);
-    if (this._data.isOffers) {
+    if (offersData[this._indexOffersInArr].offers.length !== 0) {
       this.getElement()
         .querySelector(`.event__available-offers`)
         .addEventListener(`change`, this._offersActiveChangeHandler);
+    }
+    if (this._data.destination.description) {
+      this.getElement()
+        .querySelector(`.event__input--destination`)
+        .addEventListener(`change`, this._valueNameChangeHandler);
     }
     this.getElement()
       .querySelector(`.event__type-group`)
@@ -256,14 +279,14 @@ export default class EditEvent extends Smart {
     }
 
     this._datepicker.dateFrom = flatpickr(
-      this.getElement().querySelector(`#event-start-time-1`),
+        this.getElement().querySelector(`#event-start-time-1`),
         {
-          maxDate: this._data.dateTo,
-          enableTime: true,
-          time_24hr: true,
-          dateFormat: `d/m/y H:i`,
-          defaultDate: this._data.dateFrom,
-          onChange: this._startTimeRouteChangeHandler
+          "maxDate": this._data.dateTo,
+          "enableTime": true,
+          "time_24hr": true,
+          "dateFormat": `d/m/y H:i`,
+          "defaultDate": this._data.dateFrom,
+          "onChange": this._startTimeRouteChangeHandler
         }
     );
   }
@@ -275,21 +298,21 @@ export default class EditEvent extends Smart {
     }
 
     this._datepicker.dateTo = flatpickr(
-      this.getElement().querySelector(`#event-end-time-1`),
+        this.getElement().querySelector(`#event-end-time-1`),
         {
-          minDate: this._data.dateFrom,
-          enableTime: true,
-          time_24hr: true,
-          dateFormat: `d/m/y H:i`,
-          defaultDate: this._data.dateTo,
-          onChange: this._finishTimeRouteChangeHandler
+          "minDate": this._data.dateFrom,
+          "enableTime": true,
+          "time_24hr": true,
+          "dateFormat": `d/m/y H:i`,
+          "defaultDate": this._data.dateTo,
+          "onChange": this._finishTimeRouteChangeHandler
         }
     );
   }
 
   reset(event) {
     this.updateData(
-      EditEvent.parseDataToEvent(event)
+        event
     );
   }
 
@@ -308,26 +331,5 @@ export default class EditEvent extends Smart {
     this._callback.submit = callback;
 
     this.getElement().querySelector(`form`).addEventListener(`submit`, this._submitHandler);
-  }
-
-  static parseEventToData(event) {
-    const indexOffersInArr = offersData.findIndex((offer) => offer.type === event.pointRoute);
-    return Object.assign(
-        {},
-        event,
-        {
-          isDestination: event.destination.description !== null,
-          isOffers: offersData[indexOffersInArr].offers.length !== 0
-        }
-    );
-  }
-
-  static parseDataToEvent(data) {
-    data = Object.assign({}, data);
-
-    delete data.isDestination;
-    delete data.isOffers;
-
-    return data;
   }
 }
