@@ -1,6 +1,7 @@
 import EventView from "../view/event.js";
 import EditEventView from "../view/edit-event.js";
 import {render, RenderPosition, replace, remove} from "../utils/render.js";
+import {UserAction, UpdateType} from "../const.js";
 
 const Mode = {
   DEFAULT: `DEFAULT`,
@@ -19,8 +20,9 @@ export default class Event {
 
     this._handleEditClick = this._handleEditClick.bind(this);
     this._handleEventClick = this._handleEventClick.bind(this);
-    this._handleFormSubmitClick = this._handleFormSubmitClick.bind(this);
+    this._handleFormSubmit = this._handleFormSubmit.bind(this);
     this._handleFavoriteClick = this._handleFavoriteClick.bind(this);
+    this._handleDeleteClick = this._handleDeleteClick.bind(this);
 
     this._onEscKeyDownHandler = this._onEscKeyDownHandler.bind(this);
   }
@@ -37,7 +39,8 @@ export default class Event {
     this._eventComponent.setClickOpenForm(this._handleEditClick);
     this._eventComponent.setClickFavorite(this._handleFavoriteClick);
     this._eventEditComponent.setClickOpenEvent(this._handleEventClick);
-    this._eventEditComponent.setSubmitEvent(this._handleFormSubmitClick);
+    this._eventEditComponent.setSubmitEvent(this._handleFormSubmit);
+    this._eventEditComponent.setDeleteClickHandler(this._handleDeleteClick);
 
     if (prevEventComponent === null || prevEventEditComponent === null) {
       render(this._eventListElement, this._eventComponent, RenderPosition.BEFOREEND);
@@ -93,8 +96,12 @@ export default class Event {
     this._replaceEventToFormEdit();
   }
 
-  _handleFormSubmitClick(event) {
-    this._changeData(event);
+  _handleFormSubmit(event) {
+    this._changeData(
+        UserAction.UPDATE_ELEMENT,
+        UpdateType.MINOR,
+        event
+    );
     this._replaceFormEditToEvent();
   }
 
@@ -105,6 +112,8 @@ export default class Event {
 
   _handleFavoriteClick() {
     this._changeData(
+        UserAction.UPDATE_ELEMENT,
+        UpdateType.PATCH,
         Object.assign(
             {},
             this._event,
@@ -112,6 +121,14 @@ export default class Event {
               isFavorite: !this._event.isFavorite
             }
         )
+    );
+  }
+
+  _handleDeleteClick(event) {
+    this._changeData(
+        UserAction.DELETE_ELEMENT,
+        UpdateType.MINOR,
+        event
     );
   }
 }

@@ -1,7 +1,6 @@
 import flatpickr from "flatpickr";
 import Smart from "./smart.js";
-import {offersData, destinationsData} from "../const.js";
-import {POINTS_ROUTE} from "../const.js";
+import {offersData, destinationsData, POINTS_ROUTE} from "../const.js";
 import {formatDate} from "../utils/common.js";
 
 import "../../node_modules/flatpickr/dist/flatpickr.min.css";
@@ -158,7 +157,9 @@ export default class EditEvent extends Smart {
     super();
 
     this._data = event;
+
     this._datepicker = {};
+
     this._indexOffersInArr = offersData.findIndex((offer) => offer.type === this._data.pointRoute);
     this._namesDestinationsData = Array(destinationsData.length).fill(null).map((element, i) => {
       return destinationsData[i].name;
@@ -172,17 +173,18 @@ export default class EditEvent extends Smart {
     this._offersActiveChangeHandler = this._offersActiveChangeHandler.bind(this);
     this._typesEventChangeHandler = this._typesEventChangeHandler.bind(this);
     this._valueNameChangeHandler = this._valueNameChangeHandler.bind(this);
+    this._formDeleteClickHandler = this._formDeleteClickHandler.bind(this);
 
     this._setInnerHandlers();
   }
 
   _getTemplate() {
+    this._indexOffersInArr = offersData.findIndex((offer) => offer.type === this._data.pointRoute);
     return createEditEventTemplate(this._data, this._indexOffersInArr);
   }
 
   _clickHandler(evt) {
     evt.preventDefault();
-
     this._callback.click();
   }
 
@@ -197,6 +199,11 @@ export default class EditEvent extends Smart {
     this.updateData({
       price: evt.target.value
     }, true);
+  }
+
+  _formDeleteClickHandler(evt) {
+    evt.preventDefault();
+    this._callback.deleteClick(this._data);
   }
 
   _startTimeRouteChangeHandler([userDate]) {
@@ -310,6 +317,16 @@ export default class EditEvent extends Smart {
     );
   }
 
+  removeElement() {
+    super.removeElement();
+
+    if (this._datepicker) {
+      this._datepicker.dateTo.destroy();
+      this._datepicker.dateFrom.destroy();
+      this._datepicker = {};
+    }
+  }
+
   reset(event) {
     this.updateData(
         event
@@ -319,6 +336,7 @@ export default class EditEvent extends Smart {
   restoreHandlers() {
     this._setInnerHandlers();
     this.setSubmitEvent(this._callback.submit);
+    this.setDeleteClickHandler(this._callback.deleteClick);
   }
 
   setClickOpenEvent(callback) {
@@ -331,5 +349,10 @@ export default class EditEvent extends Smart {
     this._callback.submit = callback;
 
     this.getElement().querySelector(`form`).addEventListener(`submit`, this._submitHandler);
+  }
+
+  setDeleteClickHandler(callback) {
+    this._callback.deleteClick = callback;
+    this.getElement().querySelector(`.event__reset-btn`).addEventListener(`click`, this._formDeleteClickHandler);
   }
 }

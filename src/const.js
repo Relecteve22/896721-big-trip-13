@@ -32,6 +32,19 @@ export const SECONDS_IN_MINUTES = 60;
 export const SECONDS_IN_HOUR = 60 * SECONDS_IN_MINUTES;
 export const SECONDS_IN_DAY = 24 * SECONDS_IN_HOUR;
 
+export const UserAction = {
+  UPDATE_ELEMENT: `UPDATE_ELEMENT`,
+  ADD_ELEMENT: `ADD_ELEMENT`,
+  DELETE_ELEMENT: `DELETE_ELEMENT`
+};
+
+export const UpdateType = {
+  PATCH: `PATCH`,
+  MINOR: `MINOR`,
+  MAJOR: `MAJOR`
+};
+
+
 // СНИЗУ ВСЁ ДЛЯ ГЕНЕРАЦИИ МОКОВЫХ ДАННЫХ
 
 export const POINTS_ROUTE = [`taxi`, `bus`, `train`, `ship`, `transport`, `drive`, `flight`, `check-in`, `sightseeing`, `restaurant`];
