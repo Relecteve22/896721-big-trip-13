@@ -1,12 +1,10 @@
 import EventView from "../view/event.js";
-import EditEventView from "../view/edit-event.js";
+import EditEventPresenter from "./edit-event.js";
 import {render, RenderPosition, replace, remove} from "../utils/render.js";
-import {UserAction, UpdateType} from "../const.js";
-
-const Mode = {
-  DEFAULT: `DEFAULT`,
-  EDITING: `EDITING`
-};
+import {UserAction, UpdateType, Mode} from "../const.js";
+import Offers from "../model/offers.js";
+import Destinations from "../model/destinations.js";
+import {offersData, destinationsData, POINTS_ROUTE} from "../const.js";
 
 export default class Event {
   constructor(eventListElement, changeData, changeMode) {
@@ -15,14 +13,12 @@ export default class Event {
     this._changeMode = changeMode;
 
     this._eventComponent = null;
-    this._eventEditComponent = null;
     this._modeEvent = Mode.DEFAULT;
 
     this._handleEditClick = this._handleEditClick.bind(this);
-    this._handleEventClick = this._handleEventClick.bind(this);
-    this._handleFormSubmit = this._handleFormSubmit.bind(this);
     this._handleFavoriteClick = this._handleFavoriteClick.bind(this);
-    this._handleDeleteClick = this._handleDeleteClick.bind(this);
+    this._replaceFormEditToEvent = this._replaceFormEditToEvent.bind(this);
+    this._handlerCloseEditComponent = this._handlerCloseEditComponent.bind(this);
 
     this._onEscKeyDownHandler = this._onEscKeyDownHandler.bind(this);
   }
@@ -31,18 +27,23 @@ export default class Event {
     this._event = event;
 
     const prevEventComponent = this._eventComponent;
-    const prevEventEditComponent = this._eventEditComponent;
+
+    this.setModels();
 
     this._eventComponent = new EventView(this._event);
-    this._eventEditComponent = new EditEventView(this._event);
+    this._editEventPresenter = new EditEventPresenter(this._eventListElement,
+        this._changeData,
+        this._offersModel,
+        this._destinationsModel,
+        this._replaceFormEditToEvent,
+        this._handlerCloseEditComponent);
+    this._editEventPresenter.init(this._event);
+    this._replaceFormEditToEvent();
 
     this._eventComponent.setClickOpenForm(this._handleEditClick);
     this._eventComponent.setClickFavorite(this._handleFavoriteClick);
-    this._eventEditComponent.setClickOpenEvent(this._handleEventClick);
-    this._eventEditComponent.setSubmitEvent(this._handleFormSubmit);
-    this._eventEditComponent.setDeleteClickHandler(this._handleDeleteClick);
 
-    if (prevEventComponent === null || prevEventEditComponent === null) {
+    if (prevEventComponent === null) {
       render(this._eventListElement, this._eventComponent, RenderPosition.BEFOREEND);
       return;
     }
@@ -52,11 +53,11 @@ export default class Event {
     }
 
     if (this._modeEvent === Mode.EDITING) {
-      replace(this._eventEditComponent, prevEventEditComponent);
+      this._editEventPresenter.init(this._event);
     }
 
     remove(prevEventComponent);
-    remove(prevEventEditComponent);
+    this._editEventPresenter.destroy();
   }
 
   resetView() {
@@ -67,18 +68,18 @@ export default class Event {
 
   destroy() {
     remove(this._eventComponent);
-    remove(this._eventEditComponent);
+    this._editEventPresenter.destroy();
   }
 
   _replaceEventToFormEdit() {
-    replace(this._eventEditComponent, this._eventComponent);
+    this._editEventPresenter.replaceEventToForm(this._eventComponent);
     document.addEventListener(`keydown`, this._onEscKeyDownHandler);
     this._changeMode();
     this._modeEvent = Mode.EDITING;
   }
 
   _replaceFormEditToEvent() {
-    replace(this._eventComponent, this._eventEditComponent);
+    this._editEventPresenter.replaceFormEditToEvent(this._eventComponent);
     document.removeEventListener(`keydown`, this._onEscKeyDownHandler);
     this._modeEvent = Mode.DEFAULT;
   }
@@ -86,34 +87,24 @@ export default class Event {
   _onEscKeyDownHandler(evt) {
     if (evt.key === `Escape` || evt.key === `Esc`) {
       evt.preventDefault();
-      this._eventEditComponent.reset(this._event);
-      this._replaceFormEditToEvent();
+      this._handlerCloseEditComponent();
       document.removeEventListener(`keydown`, this._onEscKeyDownHandler);
     }
+  }
+
+  _handlerCloseEditComponent() {
+    this._editEventPresenter.reset(this._event);
+    this._replaceFormEditToEvent();
   }
 
   _handleEditClick() {
     this._replaceEventToFormEdit();
   }
 
-  _handleFormSubmit(event) {
-    this._changeData(
-        UserAction.UPDATE_ELEMENT,
-        UpdateType.MINOR,
-        event
-    );
-    this._replaceFormEditToEvent();
-  }
-
-  _handleEventClick() {
-    this._eventEditComponent.reset(this._event);
-    this._replaceFormEditToEvent();
-  }
-
   _handleFavoriteClick() {
     this._changeData(
         UserAction.UPDATE_ELEMENT,
-        UpdateType.PATCH,
+        UpdateType.MINOR,
         Object.assign(
             {},
             this._event,
@@ -124,11 +115,13 @@ export default class Event {
     );
   }
 
-  _handleDeleteClick(event) {
-    this._changeData(
-        UserAction.DELETE_ELEMENT,
-        UpdateType.MINOR,
-        event
-    );
+  setModels() {
+    this._offersModel = new Offers();
+    this._offersModel.setOffers(offersData);
+    this._offersModel.setPointsRoute(POINTS_ROUTE);
+
+    this._destinationsModel = new Destinations();
+    this._destinationsModel.setDestinations(destinationsData);
+    this._destinationsModel.setCitysDestination(destinationsData);
   }
 }

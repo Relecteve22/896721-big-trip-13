@@ -1,6 +1,6 @@
 import flatpickr from "flatpickr";
-import Smart from "./smart.js";
-import {offersData, destinationsData, POINTS_ROUTE} from "../const.js";
+import he from "he";
+import Abstract from "./abstract.js";
 import {formatDate} from "../utils/common.js";
 
 import "../../node_modules/flatpickr/dist/flatpickr.min.css";
@@ -36,7 +36,7 @@ const createNamesEventTemplate = (namesDestinations) => {
   return result;
 };
 
-const createTypesEventTemplate = () => {
+const createTypesEventTemplate = (pointsRoute) => {
   const createTypeTemplate = (type) => {
     return `<div class="event__type-item">
       <input id="event-type-${type}-1" class="event__type-input visually-hidden" data-type="${type}" type="radio" name="event-type" value="${type}">
@@ -44,7 +44,7 @@ const createTypesEventTemplate = () => {
     </div>`;
   };
 
-  let result = POINTS_ROUTE.reduce(function (layout, type) {
+  let result = pointsRoute.reduce(function (layout, type) {
     return layout + createTypeTemplate(type);
   }, ``);
 
@@ -56,7 +56,7 @@ const isCheckedOffer = (offers, title) => {
   return index !== -1 ? `checked` : ``;
 };
 
-const createSectionOffersTemplate = (offers, point) => {
+const createSectionOffersTemplate = (offers, indexOffersInArr, offersData) => {
   const createOfferTemplate = (title, price, i) => {
     return (`<div class="event__offer-selector">
     <input class="event__offer-checkbox  visually-hidden" id="event-offer-luggage-${i}" data-index="${i}" type="checkbox" name="event-offer-luggage" ${isCheckedOffer(offers, title)}>
@@ -69,9 +69,7 @@ const createSectionOffersTemplate = (offers, point) => {
   };
 
   const createOffersTemplate = () => {
-    const index = offersData.findIndex((offer) => offer.type === point);
-
-    let result = offersData[index].offers.reduce(function (layout, offer, i) {
+    let result = offersData[indexOffersInArr].offers.reduce(function (layout, offer, i) {
       const {title, price} = offer;
       return layout + createOfferTemplate(title, price, i);
     }, ``);
@@ -87,12 +85,8 @@ const createSectionOffersTemplate = (offers, point) => {
 </section>`;
 };
 
-const createEditEventTemplate = (data, indexOffersInArr) => {
+const createEditEventTemplate = (data, indexOffersInArr, offersData, pointsRoute, citysDestination) => {
   const {pointRoute, price, dateFrom, dateTo, offers: offersEvent, destination} = data;
-
-  const namesDestinationsData = Array(destinationsData.length).fill(null).map((element, i) => {
-    return destinationsData[i].name;
-  });
 
   return `<li class="trip-events__item">
   <form class="event event--edit" action="#" method="post">
@@ -107,7 +101,7 @@ const createEditEventTemplate = (data, indexOffersInArr) => {
         <div class="event__type-list">
           <fieldset class="event__type-group">
             <legend class="visually-hidden">Event type</legend>
-            ${createTypesEventTemplate()}
+            ${createTypesEventTemplate(pointsRoute)}
           </fieldset>
         </div>
       </div>
@@ -116,9 +110,9 @@ const createEditEventTemplate = (data, indexOffersInArr) => {
         <label class="event__label  event__type-output" for="event-destination-1">
           ${pointRoute}
         </label>
-        <input class="event__input  event__input--destination" id="event-destination-1" type="text" name="event-destination" value="${destination.name}" list="destination-list-1">
+        <input class="event__input  event__input--destination" id="event-destination-1" type="text" name="event-destination" value="${he.encode(destination.name)}" list="destination-list-1">
         <datalist id="destination-list-1">
-          ${createNamesEventTemplate(namesDestinationsData)}
+          ${createNamesEventTemplate(citysDestination)}
         </datalist>
       </div>
 
@@ -145,42 +139,31 @@ const createEditEventTemplate = (data, indexOffersInArr) => {
       </button>
     </header>
     <section class="event__details">
-    ${offersData[indexOffersInArr].offers.length !== 0 ? createSectionOffersTemplate(offersEvent, pointRoute) : ``}
+    ${offersData[indexOffersInArr].offers.length !== 0 ? createSectionOffersTemplate(offersEvent, indexOffersInArr, offersData) : ``}
     ${destination.description ? createDestinationTemplate(destination) : ``}
     </section>
   </form>
 </li>`;
 };
 
-export default class EditEvent extends Smart {
-  constructor(event) {
+export default class EditEvent extends Abstract {
+  constructor(event, offersInfo, pointsRoute, offerIndexByTypePoint, destinations, citysDestination) {
     super();
 
-    this._data = event;
+    this._event = event;
+    this._destinations = destinations;
+    this._citysDestination = citysDestination;
+    this._offersInfo = offersInfo;
+    this._pointsRoute = pointsRoute;
+    this._offerIndexByTypePoint = offerIndexByTypePoint;
 
     this._datepicker = {};
 
-    this._indexOffersInArr = offersData.findIndex((offer) => offer.type === this._data.pointRoute);
-    this._namesDestinationsData = Array(destinationsData.length).fill(null).map((element, i) => {
-      return destinationsData[i].name;
-    });
-
-    this._clickHandler = this._clickHandler.bind(this);
-    this._submitHandler = this._submitHandler.bind(this);
-    this._priceChangeHandler = this._priceChangeHandler.bind(this);
-    this._startTimeRouteChangeHandler = this._startTimeRouteChangeHandler.bind(this);
-    this._finishTimeRouteChangeHandler = this._finishTimeRouteChangeHandler.bind(this);
-    this._offersActiveChangeHandler = this._offersActiveChangeHandler.bind(this);
-    this._typesEventChangeHandler = this._typesEventChangeHandler.bind(this);
-    this._valueNameChangeHandler = this._valueNameChangeHandler.bind(this);
-    this._formDeleteClickHandler = this._formDeleteClickHandler.bind(this);
-
-    this._setInnerHandlers();
+    this._bindHandler();
   }
 
   _getTemplate() {
-    this._indexOffersInArr = offersData.findIndex((offer) => offer.type === this._data.pointRoute);
-    return createEditEventTemplate(this._data, this._indexOffersInArr);
+    return createEditEventTemplate(this._event, this._offerIndexByTypePoint, this._offersInfo, this._pointsRoute, this._citysDestination);
   }
 
   _clickHandler(evt) {
@@ -190,131 +173,57 @@ export default class EditEvent extends Smart {
 
   _submitHandler(evt) {
     evt.preventDefault();
-    this._callback.submit(this._data);
+    this._callback.submit(this._event);
   }
 
   _priceChangeHandler(evt) {
     evt.preventDefault();
     evt.target.value = evt.target.value.replace(/[^\+\d]/g, ``);
-    this.updateData({
-      price: evt.target.value
-    }, true);
+
+    this._callback.price(evt);
   }
 
   _formDeleteClickHandler(evt) {
     evt.preventDefault();
-    this._callback.deleteClick(this._data);
+    this._callback.deleteClick(this._event);
   }
 
   _startTimeRouteChangeHandler([userDate]) {
-    this.updateData({
-      dateFrom: userDate
-    }, true);
-    this._setDateToPicker();
+    this._userDateTime = userDate;
+    this._callback.dateFrom(this._userDateTime);
   }
 
   _finishTimeRouteChangeHandler([userDate]) {
-    this.updateData({
-      dateTo: userDate
-    }, true);
-    this._setDateFromPicker();
-  }
-
-  _offersActiveChangeHandler(evt) {
-    evt.preventDefault();
-    const dataOfferChange = offersData[this._indexOffersInArr].offers[evt.target.dataset.index];
-
-    if (evt.target.checked) {
-      this.updateData({
-        offers: [...this._data.offers, dataOfferChange]
-      }, true);
-      return;
-    }
-
-    const EventOffersSet = new Set(this._data.offers);
-    EventOffersSet.delete(dataOfferChange);
-    this.updateData({
-      offers: Array.from(EventOffersSet)
-    }, true);
-  }
-
-  _valueNameChangeHandler(evt) {
-    evt.preventDefault();
-    for (let nameDestinations of this._namesDestinationsData) {
-      if (evt.target.value === nameDestinations) {
-        const indexNamesInArr = destinationsData.findIndex((destination) => destination.name === evt.target.value);
-        this.updateData({
-          destination: destinationsData[indexNamesInArr]
-        });
-      }
-    }
+    this._userDateTime = userDate;
+    this._callback.dateTo(this._userDateTime);
   }
 
   _typesEventChangeHandler(evt) {
     evt.preventDefault();
-    this.updateData({
-      pointRoute: evt.target.dataset.type,
-      offers: []
-    });
+    this._callback.typesChange(evt);
   }
 
-  _setInnerHandlers() {
-    this._setDateFromPicker();
-    this._setDateToPicker();
-    this.getElement()
-      .querySelector(`.event__input--price`)
-      .addEventListener(`input`, this._priceChangeHandler);
-    if (offersData[this._indexOffersInArr].offers.length !== 0) {
-      this.getElement()
-        .querySelector(`.event__available-offers`)
-        .addEventListener(`change`, this._offersActiveChangeHandler);
+  _valueNameChangeHandler(evt) {
+    evt.preventDefault();
+    for (let nameDestinations of this._citysDestination) {
+      if (evt.target.value === nameDestinations) {
+        const indexNamesInArr = this._destinations.findIndex((destination) => destination.name === evt.target.value);
+        this._callback.valuesNameChange(indexNamesInArr);
+        break;
+      }
     }
-    if (this._data.destination.description) {
-      this.getElement()
-        .querySelector(`.event__input--destination`)
-        .addEventListener(`change`, this._valueNameChangeHandler);
-    }
-    this.getElement()
-      .querySelector(`.event__type-group`)
-      .addEventListener(`change`, this._typesEventChangeHandler);
   }
 
-  _setDateFromPicker() {
-    if (this._datepicker.dateFrom) {
-      this._datepicker.dateFrom.destroy();
-      this._datepicker.dateFrom = null;
+  _offersActiveChangeHandler(evt) {
+    evt.preventDefault();
+    const dataOfferChange = this._offersInfo[this._offerIndexByTypePoint].offers[evt.target.dataset.index];
+
+    if (evt.target.checked) {
+      this._callback.offerChecked(dataOfferChange);
+      return;
     }
 
-    this._datepicker.dateFrom = flatpickr(
-        this.getElement().querySelector(`#event-start-time-1`),
-        {
-          "maxDate": this._data.dateTo,
-          "enableTime": true,
-          "time_24hr": true,
-          "dateFormat": `d/m/y H:i`,
-          "defaultDate": this._data.dateFrom,
-          "onChange": this._startTimeRouteChangeHandler
-        }
-    );
-  }
-
-  _setDateToPicker() {
-    if (this._datepicker.dateTo) {
-      this._datepicker.dateTo.destroy();
-      this._datepicker.dateTo = null;
-    }
-
-    this._datepicker.dateTo = flatpickr(
-        this.getElement().querySelector(`#event-end-time-1`),
-        {
-          "minDate": this._data.dateFrom,
-          "enableTime": true,
-          "time_24hr": true,
-          "dateFormat": `d/m/y H:i`,
-          "defaultDate": this._data.dateTo,
-          "onChange": this._finishTimeRouteChangeHandler
-        }
-    );
+    this._callback.offerUnChecked(dataOfferChange);
   }
 
   removeElement() {
@@ -327,32 +236,91 @@ export default class EditEvent extends Smart {
     }
   }
 
-  reset(event) {
-    this.updateData(
-        event
+  setOffersChangeHandler(callbackChecked, callbackUnChecked) {
+    this._callback.offerChecked = callbackChecked;
+    this._callback.offerUnChecked = callbackUnChecked;
+    this.getElement().querySelector(`.event__available-offers`).addEventListener(`change`, this._offersActiveChangeHandler);
+  }
+
+  setValuesNameChangeHandler(callback) {
+    this._callback.valuesNameChange = callback;
+    this.getElement().querySelector(`.event__input--destination`).addEventListener(`change`, this._valueNameChangeHandler);
+  }
+
+  setTypesEventChangeHandler(callback) {
+    this._callback.typesChange = callback;
+    this.getElement().querySelector(`.event__type-group`).addEventListener(`change`, this._typesEventChangeHandler);
+  }
+
+  setDateFromPicker(callback) {
+    this._callback.dateFrom = callback;
+    if (this._datepicker.dateFrom) {
+      this._datepicker.dateFrom.destroy();
+      this._datepicker.dateFrom = null;
+    }
+
+    this._datepicker.dateFrom = flatpickr(
+        this.getElement().querySelector(`#event-start-time-1`),
+        {
+          "maxDate": this._event.dateTo,
+          "enableTime": true,
+          "time_24hr": true,
+          "dateFormat": `d/m/y H:i`,
+          "defaultDate": this._event.dateFrom,
+          "onChange": this._startTimeRouteChangeHandler
+        }
     );
   }
 
-  restoreHandlers() {
-    this._setInnerHandlers();
-    this.setSubmitEvent(this._callback.submit);
-    this.setDeleteClickHandler(this._callback.deleteClick);
+  setDateToPicker(callback) {
+    this._callback.dateTo = callback;
+    if (this._datepicker.dateTo) {
+      this._datepicker.dateTo.destroy();
+      this._datepicker.dateTo = null;
+    }
+
+    this._datepicker.dateTo = flatpickr(
+        this.getElement().querySelector(`#event-end-time-1`),
+        {
+          "minDate": this._event.dateFrom,
+          "enableTime": true,
+          "time_24hr": true,
+          "dateFormat": `d/m/y H:i`,
+          "defaultDate": this._event.dateTo,
+          "onChange": this._finishTimeRouteChangeHandler
+        }
+    );
   }
 
   setClickOpenEvent(callback) {
     this._callback.click = callback;
-
     this.getElement().querySelector(`.event__rollup-btn`).addEventListener(`click`, this._clickHandler);
   }
 
   setSubmitEvent(callback) {
     this._callback.submit = callback;
-
     this.getElement().querySelector(`form`).addEventListener(`submit`, this._submitHandler);
   }
 
   setDeleteClickHandler(callback) {
     this._callback.deleteClick = callback;
     this.getElement().querySelector(`.event__reset-btn`).addEventListener(`click`, this._formDeleteClickHandler);
+  }
+
+  setPriceChangeHandler(callback) {
+    this._callback.price = callback;
+    this.getElement().querySelector(`.event__input--price`).addEventListener(`input`, this._priceChangeHandler);
+  }
+
+  _bindHandler() {
+    this._clickHandler = this._clickHandler.bind(this);
+    this._submitHandler = this._submitHandler.bind(this);
+    this._priceChangeHandler = this._priceChangeHandler.bind(this);
+    this._startTimeRouteChangeHandler = this._startTimeRouteChangeHandler.bind(this);
+    this._finishTimeRouteChangeHandler = this._finishTimeRouteChangeHandler.bind(this);
+    this._offersActiveChangeHandler = this._offersActiveChangeHandler.bind(this);
+    this._typesEventChangeHandler = this._typesEventChangeHandler.bind(this);
+    this._valueNameChangeHandler = this._valueNameChangeHandler.bind(this);
+    this._formDeleteClickHandler = this._formDeleteClickHandler.bind(this);
   }
 }

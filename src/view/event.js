@@ -1,4 +1,5 @@
 import dayjs from "dayjs";
+import he from "he";
 import Abstract from "./abstract.js";
 import {SECONDS_IN_MINUTES, SECONDS_IN_HOUR, SECONDS_IN_DAY} from "../const.js";
 
@@ -45,7 +46,7 @@ const createEventTemplate = (event) => {
       <div class="event__type">
         <img class="event__type-icon" width="42" height="42" src="img/icons/${pointRoute}.png" alt="Event type icon">
       </div>
-      <h3 class="event__title">${pointRoute} ${destination.name}</h3>
+      <h3 class="event__title">${pointRoute} ${he.encode(destination.name)}</h3>
       <div class="event__schedule">
         <p class="event__time">
           <time class="event__start-time" datetime="${dayjs(dateFrom).format()}">${dayjs(dateFrom).format(`hh:mm`)}</time>

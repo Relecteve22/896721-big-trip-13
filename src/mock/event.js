@@ -9,7 +9,7 @@ const generateRandomElement = (array) => {
   return array[getRandomInteger(0, array.length - 1)];
 };
 
-const generateId = () => Date.now() + parseInt(Math.random() * 10000, 10);
+export const generateId = () => Date.now() + parseInt(Math.random() * 10000, 10);
 
 const generateFromDate = () => {
   const maxDaysGap = 7;

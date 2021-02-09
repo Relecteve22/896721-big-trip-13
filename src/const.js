@@ -1,3 +1,4 @@
+import dayjs from "dayjs";
 import {generateOffersData, generateDestinationsData} from "./mock/offer-and-destination.js";
 
 export const SortType = {
@@ -28,6 +29,22 @@ export const DEFAULT_OFFERS = [
   }
 ];
 
+export const defaultEvent = () => {
+  return {
+    pointRoute: `taxi`,
+    destination: {
+      name: null,
+      destination: null,
+      photos: []
+    },
+    dateFrom: dayjs().toDate(),
+    dateTo: dayjs().add(1, `day`).toDate(),
+    offers: [],
+    price: ``
+  };
+};
+
+
 export const SECONDS_IN_MINUTES = 60;
 export const SECONDS_IN_HOUR = 60 * SECONDS_IN_MINUTES;
 export const SECONDS_IN_DAY = 24 * SECONDS_IN_HOUR;
@@ -44,6 +61,10 @@ export const UpdateType = {
   MAJOR: `MAJOR`
 };
 
+export const Mode = {
+  DEFAULT: `DEFAULT`,
+  EDITING: `EDITING`
+};
 
 // СНИЗУ ВСЁ ДЛЯ ГЕНЕРАЦИИ МОКОВЫХ ДАННЫХ
 

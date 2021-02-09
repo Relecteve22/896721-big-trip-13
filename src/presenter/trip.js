@@ -2,10 +2,13 @@ import SortView from "../view/sort.js";
 import ListView from "../view/list.js";
 import ListEmptyView from "../view/list-empty.js";
 import EventPresenter from "./event.js";
-// import AddNewEventView from "./view/add-new-event.js";
+import AddNewEventPresenter from "./add-new-event.js";
 import {render, RenderPosition, remove} from "../utils/render.js";
 import {getWeightPrice, getWeightTime, getWeightEventDayStart} from "../utils/event.js";
-import {UpdateType, UserAction, SortType} from "../const.js";
+import {UpdateType, UserAction, SortType, offersData, destinationsData, POINTS_ROUTE, defaultEvent} from "../const.js";
+import Offers from "../model/offers.js";
+import Destinations from "../model/destinations.js";
+
 
 export default class Trip {
   constructor(tripEventContainer, eventsModel) {
@@ -18,6 +21,7 @@ export default class Trip {
     this._eventPresenterMap = new Map();
 
     this._currentSortType = SortType.DAY;
+    this.setModels();
 
     this._handleViewAction = this._handleViewAction.bind(this);
     this._handleModelEvent = this._handleModelEvent.bind(this);
@@ -62,6 +66,18 @@ export default class Trip {
     const eventPresenter = new EventPresenter(this._tripEventsListComponent, this._handleViewAction, this._handleModeChange);
     eventPresenter.init(event);
     this._eventPresenterMap[event.id] = eventPresenter;
+  }
+
+  createEvent() {
+    this._addNewEventPresenter = new AddNewEventPresenter(
+        this._tripEventsListComponent,
+        this._handleViewAction,
+        this._offersModel,
+        this._destinationsModel
+    );
+    this._currentSortType = SortType.DAY;
+    // this._filterModel.setFilter(UpdateType.MAJOR, FilterType.ALL);
+    this._addNewEventPresenter.init(defaultEvent());
   }
 
   _renderEventsList() {
@@ -142,5 +158,15 @@ export default class Trip {
     this._currentSortType = sortType;
     this._clearBoard({resetRenderedTaskCount: true});
     this._renderBoard();
+  }
+
+  setModels() {
+    this._offersModel = new Offers();
+    this._offersModel.setOffers(offersData);
+    this._offersModel.setPointsRoute(POINTS_ROUTE);
+
+    this._destinationsModel = new Destinations();
+    this._destinationsModel.setDestinations(destinationsData);
+    this._destinationsModel.setCitysDestination(destinationsData);
   }
 }

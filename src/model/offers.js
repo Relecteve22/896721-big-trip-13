@@ -16,11 +16,11 @@ export default class Offers {
     return this._offers;
   }
 
-  getOfferIndexByTypePoint(pointChoosen) {
-    return this._offers.findIndex((offer) => offer.type === pointChoosen);
-  }
-
   getPointsRoute() {
     return this._pointRoute;
+  }
+
+  getOfferIndexByTypePoint(pointChoosen) {
+    return this._offers.findIndex((offer) => offer.type === pointChoosen);
   }
 }

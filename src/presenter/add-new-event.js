@@ -1,78 +1,71 @@
-import EditEventView from "../view/edit-event.js";
-import {UserAction, UpdateType} from "../const.js";
+import AddNewEvent from "../view/add-new-event.js";
+import {UserAction, UpdateType, defaultEvent} from "../const.js";
 import {render, RenderPosition, replace, remove} from "../utils/render.js";
 import UpdateEvent from "../utils/updateEvent.js";
 
-export default class EditEventPresenter extends UpdateEvent {
-  constructor(eventListElement, changeData, offersModel, destinationsModel, callbackReplace, callbackCloseEditComponent) {
+export default class AddNewEventPresenter extends UpdateEvent {
+  constructor(eventListElement, changeData, offersModel, destinationsModel) {
     super();
 
     this._offersModel = offersModel;
-    this._callbackReplace = callbackReplace;
     this._destinationsModel = destinationsModel;
     this._changeData = changeData;
-    this._callbackCloseEditComponent = callbackCloseEditComponent;
 
     this._eventListElement = eventListElement;
-    this._eventEditComponent = null;
+    this._addNewEventComponent = null;
 
     this._bindHandler();
   }
 
   init(event) {
     this._event = event;
-    const prevEventEditComponent = this._eventEditComponent;
+    const prevAddNewEventComponent = this._addNewEventComponent;
 
-    this._eventEditComponent = new EditEventView(this._event,
+    this._addNewEventComponent = new AddNewEvent(
         this._offersModel.getOffers(),
         this._offersModel.getPointsRoute(),
         this._offersModel.getOfferIndexByTypePoint(this._event.pointRoute),
         this._destinationsModel.getDestinations(),
-        this._destinationsModel.getCitysDestination()
+        this._destinationsModel.getCitysDestination(),
+        this._event
     );
 
-    if (prevEventEditComponent !== null) {
-      replace(this._eventEditComponent, prevEventEditComponent);
-      remove(prevEventEditComponent);
+    if (prevAddNewEventComponent !== null) {
+      replace(this._addNewEventComponent, prevAddNewEventComponent);
+      remove(prevAddNewEventComponent);
     } else {
-      render(this._eventListElement, this._eventEditComponent, RenderPosition.AFTERBEGIN);
+      render(this._eventListElement, this._addNewEventComponent, RenderPosition.AFTERBEGIN);
     }
     this._setInnerHandlers();
   }
 
   replaceEventToForm(eventComponent) {
-    replace(this._eventEditComponent, eventComponent);
+    replace(this._addNewEventComponent, eventComponent);
   }
 
   replaceFormEditToEvent(eventComponent) {
-    replace(eventComponent, this._eventEditComponent);
-  }
-
-  reset(event) {
-    this.updateData(
-        event
-    );
+    replace(eventComponent, this._addNewEventComponent);
   }
 
   destroy() {
-    remove(this._eventEditComponent);
+    remove(this._addNewEventComponent);
+    this._addNewEventComponent = null;
   }
 
   _setInnerHandlers() {
     const offersData = this._offersModel.getOffers();
     const indexOfferData = this._offersModel.getOfferIndexByTypePoint(this._event.pointRoute);
 
-    this._eventEditComponent.setPriceChangeHandler(this._handlePriceChange);
-    this._eventEditComponent.setDateFromPicker(this._handleStartTimeChange);
-    this._eventEditComponent.setDateToPicker(this._handlerFinishTimeChange);
-    this._eventEditComponent.setTypesEventChangeHandler(this._handlerTypesEventChange);
-    this._eventEditComponent.setValuesNameChangeHandler(this._handlerValuesNameChange);
+    this._addNewEventComponent.setPriceChangeHandler(this._handlePriceChange);
+    this._addNewEventComponent.setDateFromPicker(this._handleStartTimeChange);
+    this._addNewEventComponent.setDateToPicker(this._handlerFinishTimeChange);
+    this._addNewEventComponent.setTypesEventChangeHandler(this._handlerTypesEventChange);
+    this._addNewEventComponent.setValuesNameChangeHandler(this._handlerValuesNameChange);
     if (offersData[indexOfferData].offers.length !== 0) {
-      this._eventEditComponent.setOffersChangeHandler(this._handlerOfferChecked, this._handlerOfferUnChecked);
+      this._addNewEventComponent.setOffersChangeHandler(this._handlerOfferChecked, this._handlerOfferUnChecked);
     }
-    this._eventEditComponent.setClickOpenEvent(this._handleEventClick);
-    this._eventEditComponent.setSubmitEvent(this._handleFormSubmit);
-    this._eventEditComponent.setDeleteClickHandler(this._handleDeleteClick);
+    this._addNewEventComponent.setClickClose(this._handleCloseClick);
+    this._addNewEventComponent.setSubmitEvent(this._handleFormSubmit);
   }
 
   _handlerOfferChecked(dataOfferChange) {
@@ -113,7 +106,7 @@ export default class EditEventPresenter extends UpdateEvent {
       dateFrom: userDate
     }, true);
     // this._handlerFinishTimeChange(userDate);
-    this._eventEditComponent.setDateToPicker(this._handlerFinishTimeChange);
+    this._addNewEventComponent.setDateToPicker(this._handlerFinishTimeChange);
   }
 
   _handlerFinishTimeChange(userDate) {
@@ -121,28 +114,20 @@ export default class EditEventPresenter extends UpdateEvent {
       dateTo: userDate
     }, true);
     // this._handleStartTimeChange(userDate);
-    this._eventEditComponent.setDateFromPicker(this._handleStartTimeChange);
+    this._addNewEventComponent.setDateFromPicker(this._handleStartTimeChange);
   }
 
   _handleFormSubmit() {
     this._changeData(
-        UserAction.UPDATE_ELEMENT,
+        UserAction.ADD_ELEMENT,
         UpdateType.MINOR,
         this._event
     );
-    this._callbackReplace();
+    this.destroy();
   }
 
-  _handleDeleteClick(event) {
-    this._changeData(
-        UserAction.DELETE_ELEMENT,
-        UpdateType.MINOR,
-        event
-    );
-  }
-
-  _handleEventClick() {
-    this._callbackCloseEditComponent();
+  _handleCloseClick() {
+    this.destroy();
   }
 
   _bindHandler() {
@@ -154,7 +139,6 @@ export default class EditEventPresenter extends UpdateEvent {
     this._handlerOfferChecked = this._handlerOfferChecked.bind(this);
     this._handlerOfferUnChecked = this._handlerOfferUnChecked.bind(this);
     this._handleFormSubmit = this._handleFormSubmit.bind(this);
-    this._handleDeleteClick = this._handleDeleteClick.bind(this);
-    this._handleEventClick = this._handleEventClick.bind(this);
+    this._handleCloseClick = this._handleCloseClick.bind(this);
   }
 }
